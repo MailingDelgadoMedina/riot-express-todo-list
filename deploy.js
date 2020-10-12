@@ -2,11 +2,8 @@ var cmd = require('node-cmd');
 var path, node_ssh, ssh, fs;
 fs = require('fs');
 path = require('path');
-//const {NodeSSH} = require('node-ssh')
 node_ssh = require('node-ssh');
 ssh = new node_ssh();
-
-
 
 // the method that starts the deployment process
 function main() {
@@ -26,7 +23,7 @@ function installPM2() {
 function transferProjectToRemote(failed, successful) {
   return ssh.putDirectory(
     '../riot-express-todo-list',
-    '/home/ubuntu/riot-express-todo-list',
+    '/home/ubuntu/riot-express-todo-list-temp',
     {
       recursive: true,
       concurrency: 1,
@@ -52,7 +49,7 @@ function transferProjectToRemote(failed, successful) {
 // creates a temporary folder on the remote server
 function createRemoteTempFolder() {
   return ssh.execCommand(
-    'rm -rf hackathon-starter && mkdir riot-express-todo-list', {
+    'rm -rf riot-express-todo-list-temp && mkdir riot-express-todo-list-temp', {
       cwd: '/home/ubuntu'
   });
 }
@@ -68,7 +65,7 @@ function stopRemoteServices() {
 // updates the project source on the server
 function updateRemoteApp() {
   return ssh.execCommand(
-    'mkdir riot-express-todo-list && cp -r riot-express-todo-list/* riot-express-todo-list/ && rm -rf riot-express-todo-list', {
+    'mkdir riot-express-todo-list && cp -r riot-express-todo-list-temp/* riot-express-todo-list/ && rm -rf riot-express-todo-list-temp', {
       cwd: '/home/ubuntu'
   });
 }
@@ -84,11 +81,11 @@ function restartRemoteServices() {
 // connect to the remote server
 function sshConnect() {
   console.log('Connecting to the server...');
-  
+
   ssh
     .connect({
       // TODO: ADD YOUR IP ADDRESS BELOW (e.g. '12.34.5.67')
-      host: '54.242.0.188',
+      host: '00.00.00.00',
       username: 'ubuntu',
       privateKey: 'hs-key.pem'
     })
@@ -98,7 +95,7 @@ function sshConnect() {
       return installPM2();
     })
     .then(function() {
-      console.log('Creating `riot-express-todo-list` folder.');
+      console.log('Creating `riot-express-todo-list-temp` folder.');
       return createRemoteTempFolder();
     })
     .then(function(result) {
